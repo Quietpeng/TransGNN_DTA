@@ -6,7 +6,7 @@
 ## Introduction  
 TransGNN_DTA is a project for drug-target affinity prediction, implementing the TransGNN model that combines Transformer and GNN technologies. The model aims to more accurately predict the binding affinity between drugs and targets, supports multiple benchmark datasets such as DAVIS and KIBA, and provides corresponding training and testing scripts. Meanwhile, the project includes functions like data preprocessing, model training, early stopping, and email notifications to facilitate users' experiments and result monitoring.  
 
-Related papers are under review.  
+Related papers [TransGNN-DTA: A Framework for Drug-Target Affinity Prediction Based on a Chunked Transformer-GNN](https://doi.org/10.5755/j01.itc.54.4.42186)
 
 
 ## Model Methodology  

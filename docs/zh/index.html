@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>TransGNN_DTA：Transformer + GNN 药物靶点亲和力回归</title>
+<meta name="description" content="Apache-2.0 许可的 TransGNN 药物靶点亲和力回归实现（PyTorch）：分块 Transformer 编码器 + GNN + 回归解码器，含 DAVIS/KIBA 数据、4 个预训练权重与训练脚本。">
+<link rel="canonical" href="https://quietpeng.github.io/TransGNN_DTA/zh/">
+<link rel="alternate" hreflang="en" href="https://quietpeng.github.io/TransGNN_DTA/">
+<link rel="alternate" hreflang="zh-CN" href="https://quietpeng.github.io/TransGNN_DTA/zh/">
+<link rel="alternate" hreflang="x-default" href="https://quietpeng.github.io/TransGNN_DTA/">
+<meta name="author" content="Quietpeng">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="TransGNN_DTA：Transformer + GNN 药物靶点亲和力回归">
+<meta property="og:description" content="Apache-2.0 许可的 TransGNN 药物靶点亲和力回归实现（PyTorch）：分块 Transformer 编码器 + GNN + 回归解码器，含 DAVIS/KIBA 数据、4 个预训练权重与训练脚本。">
+<meta property="og:url" content="https://quietpeng.github.io/TransGNN_DTA/zh/">
+<meta name="twitter:card" content="summary_large_image">
+
+<style>
+  :root { --bg:#fbfbfd; --fg:#17181c; --muted:#5b6070; --line:#e3e5ec; --accent:#1f3a93; --card:#fff; --warn:#8a5a00; --ok:#1a6b3c }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0e1015; --fg:#eceef4; --muted:#9aa1b2; --line:#252833; --accent:#8fb0ff; --card:#151821; --warn:#e0b25a; --ok:#7fd8a4 } }
+  * { box-sizing:border-box }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.7 -apple-system,"Segoe UI","Noto Sans SC",system-ui,sans-serif; }
+  main { max-width:880px; margin:0 auto; padding:56px 20px 96px; }
+  header { display:flex; gap:16px; align-items:baseline; flex-wrap:wrap; margin-bottom:8px }
+  h1 { font-size:clamp(23px,3.8vw,33px); line-height:1.3; margin:0; flex:1 1 320px }
+  .sub { color:var(--muted); margin:6px 0 26px; font-size:14.5px }
+  h2 { font-size:20px; margin:46px 0 12px; padding-bottom:8px; border-bottom:1px solid var(--line) }
+  h3 { font-size:16.5px; margin:22px 0 6px }
+  .lede { font-size:17px } .lede strong { color:var(--accent) }
+  blockquote { margin:16px 0; padding:6px 0 6px 16px; border-left:3px solid var(--line); color:var(--muted) }
+  blockquote b { color:var(--fg) }
+  table { width:100%; border-collapse:collapse; margin:14px 0; font-size:14.5px }
+  th, td { text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top }
+  th { color:var(--muted); font-weight:600 }
+  th[scope="row"] { color:var(--fg); font-weight:600; white-space:nowrap }
+  code, pre { background:rgba(127,127,127,.13); border-radius:6px; font-size:.92em }
+  code { padding:1px 5px } pre { padding:14px 16px; overflow:auto; line-height:1.55 }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(215px,1fr)); gap:14px; margin:18px 0 }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px }
+  .card b { display:block; font-size:21px } .card span { color:var(--muted); font-size:13.5px }
+  a { color:var(--accent) }
+  a:focus-visible, .cta:focus-visible, summary:focus-visible { outline:3px solid var(--accent); outline-offset:3px; border-radius:4px }
+  .cta { display:inline-block; margin:8px 10px 8px 0; padding:10px 18px; border-radius:999px; background:var(--accent); color:#fff; text-decoration:none; font-weight:600 }
+  .cta.ghost { background:transparent; color:var(--accent); border:1px solid var(--accent) }
+  .skip { position:absolute; left:-9999px; top:0; background:var(--card); padding:10px 14px; border:1px solid var(--line); border-radius:8px; z-index:9 }
+  .skip:focus { left:12px; top:12px }
+  .lang { font-size:14px; color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:999px; padding:4px 12px }
+  .note { border:1px solid var(--line); border-left:4px solid var(--warn); border-radius:8px; padding:12px 16px; background:var(--card); margin:16px 0 }
+  .note b { color:var(--warn) }
+  .ok { color:var(--ok) }
+  .gallery { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; margin:16px 0 }
+  .gallery figure { margin:0 }
+  .gallery img { width:100%; height:auto; border:1px solid var(--line); border-radius:10px }
+  .gallery figcaption { color:var(--muted); font-size:13.5px; margin-top:6px }
+  footer { margin-top:56px; color:var(--muted); font-size:13.5px; border-top:1px solid var(--line); padding-top:18px }
+  @media (prefers-reduced-motion: reduce) { * { animation:none !important; transition:none !important; scroll-behavior:auto !important } }
+  @media print { .skip, .cta, .lang { display:none } body { background:#fff; color:#000 } a[href^="http"]::after { content:" (" attr(href) ")"; font-size:11px } }
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareSourceCode",
+  "name": "TransGNN_DTA",
+  "alternateName": [
+    "TransGNN-DTA",
+    "药物靶点亲和力预测"
+  ],
+  "description": "Apache-2.0 许可的 TransGNN 药物靶点亲和力回归实现（PyTorch）：分块 Transformer 编码器 + GNN 消息传递 + 回归解码器，含 DAVIS/KIBA 数据预处理与训练脚本。",
+  "url": "https://quietpeng.github.io/TransGNN_DTA/zh/",
+  "codeRepository": "https://github.com/Quietpeng/TransGNN_DTA",
+  "programmingLanguage": "Python",
+  "runtimePlatform": "PyTorch 2.3.0 / CUDA 12.4",
+  "author": {
+    "@type": "Person",
+    "name": "Quietpeng"
+  },
+  "dateModified": "2026-11-01",
+  "inLanguage": "zh-CN",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "citation": "https://doi.org/10.5755/j01.itc.54.4.42186",
+  "sameAs": [
+    "https://doi.org/10.5755/j01.itc.54.4.42186",
+    "https://github.com/Quietpeng/TransGNN_DTA"
+  ],
+  "keywords": "药物靶点亲和力, 结合亲和力预测, 图神经网络, DAVIS, KIBA, PyTorch"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "TransGNN_DTA",
+  "url": "https://quietpeng.github.io/TransGNN_DTA/zh/",
+  "inLanguage": "zh-CN",
+  "publisher": {
+    "@type": "Person",
+    "name": "Quietpeng"
+  }
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">跳到正文</a>
+<main id="main">
+<article>
+
+<header>
+  <h1>TransGNN_DTA：Transformer + GNN 的药物靶点亲和力回归实现</h1>
+  <a class="lang" href="../" hreflang="en" lang="en">English</a>
+</header>
+<p class="sub">最后更新：2026-11-01 · Apache-2.0 · Python 3.12 / PyTorch 2.3.0 / CUDA 12.4</p>
+
+<p class="lede"><strong>一句话</strong>：TransGNN_DTA 是一个科研代码仓库，用 TransGNN 做药物靶点亲和力（DTA）回归——药物 SMILES 与蛋白序列走分块 Transformer 编码器，再经 GNN 消息传递，最后由回归解码器输出一个亲和力数值；仓库里带齐了预处理、训练和加载权重的脚本，可以在自己的 GPU 上跑 DAVIS 与 KIBA 实验。</p>
+
+<blockquote>
+<p><b>论文：</b><a href="https://doi.org/10.5755/j01.itc.54.4.42186">TransGNN-DTA: A Framework for Drug-Target Affinity Prediction Based on a Chunked Transformer-GNN</a> · <b>代码：</b><a href="https://github.com/Quietpeng/TransGNN_DTA">Quietpeng/TransGNN_DTA</a></p>
+</blockquote>
+
+<p>
+  <a class="cta" href="https://github.com/Quietpeng/TransGNN_DTA">代码仓库</a>
+  <a class="cta ghost" href="https://doi.org/10.5755/j01.itc.54.4.42186">论文（DOI）</a>
+</p>
+
+<div class="grid">
+  <div class="card"><b>50 / 545</b><span>药物与靶点序列长度上限（<code>config.json</code>）· <a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/config.json">config</a></span></div>
+  <div class="card"><b>32 GB</b><span>README 参考实验使用的单卡显存 · <a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/README.md">README</a></span></div>
+  <div class="card"><b>4 个权重</b><span>DAVIS/KIBA × best-CI/best-MSE，各约 101 MB · <a href="https://github.com/Quietpeng/TransGNN_DTA/tree/main/models">models/</a></span></div>
+  <div class="card"><b>15%</b><span>三处 dropout 比例 · <a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/config.json">config</a></span></div>
+</div>
+
+<h2>动手前先看清这几条</h2>
+<table>
+  <tbody>
+    <tr><th scope="row">论文</th><td><a href="https://doi.org/10.5755/j01.itc.54.4.42186">doi:10.5755/j01.itc.54.4.42186</a>，取自 <a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/README.md">README</a></td></tr>
+    <tr><th scope="row">许可</th><td>Apache License 2.0，仅代码，见 <a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/LICENSE">LICENSE</a></td></tr>
+    <tr><th scope="row">参考环境</th><td>Python 3.12（Ubuntu 22.04）、PyTorch 2.3.0、CUDA 12.4、单张 32 GB vGPU，见 <a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/README.md">README</a></td></tr>
+    <tr><th scope="row">仓库内数据</th><td><a href="https://github.com/Quietpeng/TransGNN_DTA/tree/main/dataset/regression">dataset/regression</a> 下有 DAVIS、KIBA、BindingDB、ChEMBL，benchmark 划分在 <code>benchmark/</code></td></tr>
+    <tr><th scope="row">随仓库权重</th><td><a href="https://github.com/Quietpeng/TransGNN_DTA/tree/main/models">models/</a> 下 4 个 <code>.pth</code>，每个约 101 MB</td></tr>
+    <tr><th scope="row">入口脚本</th><td><a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/train_reg.py">train_reg.py</a> 训练、<a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/preprocess.py">preprocess.py</a> 编码器、<a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/double_towers.py">double_towers.py</a> 模型、<a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/util_function.py">util_function.py</a> 指标与早停</td></tr>
+    <tr><th scope="row">关键超参</th><td>drug_max_seq 50、target_max_seq 545、emb_size 256、64 个注意力头、2 层、dropout 0.15，全部在 <a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/config.json">config.json</a></td></tr>
+  </tbody>
+</table>
+
+<div class="note"><b>本页不写任何性能数字。</b>仓库 README 里没有 MSE / CI / Pearson 指标表，所以这里一个都不列。任何 DAVIS/KIBA 分数都应该来自你自己跑一遍脚本的结果（或论文原文），而不是来自一个展示页。</div>
+
+<h2>方法：四个阶段各自在做什么</h2>
+<p>模型分四段。<b>增强嵌入层</b>把药物 SMILES 与蛋白序列变成词嵌入加位置嵌入，再做归一化与 dropout；<b>编码器模块</b>堆叠带前馈的注意力层，沿序列抓上下文；<b>GNN 层</b>做消息传递，让分块表示之间的结构信息互相流动；<b>解码器模块</b>把特征映射成一维输出，也就是预测的结合亲和力。</p>
+<p>训练侧用 MSE 作回归损失、AdamW 更新参数、<code>ReduceLROnPlateau</code> 按验证集损失调学习率，并用 <code>GradScaler</code> 与 <code>autocast</code> 做混合精度以省显存、加快步进。早停监控验证损失，<code>patience</code> 可调（README 示例是 <code>EarlyStopping(patience=20)</code>），触发时可发邮件通知。测试路径返回的指标是 <code>mse</code>、<code>r2</code>、<code>CI</code> 与回归损失，实现在 <code>util_function.py</code>。</p>
+<p>序列是按块切分而不是截断：配置里 <code>drug_max_seq</code> 为 50、<code>target_max_seq</code> 为 545，长蛋白会被切成窗口分别编码再由 GNN 聚合——这正是论文标题里 "chunked" 的含义，也是它能处理远长于小分子的蛋白的原因。</p>
+
+<h2>复现一次训练：完整命令序列</h2>
+<ol>
+  <li>建环境：<code>python -m venv transgnn_env &amp;&amp; source transgnn_env/bin/activate</code>。</li>
+  <li>克隆并装依赖：<code>git clone https://github.com/Quietpeng/TransGNN_DTA.git &amp;&amp; cd TransGNN_DTA &amp;&amp; pip install -r requirements.txt</code>。锁定版本是 scikit-learn 1.5.2、scipy 1.14.1、subword-nmt 0.3.8、PyYAML 6.0.1、numpy 2.1.3、pandas 2.2.3、tensorboard 2.18.0（<a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/requirements.txt">requirements.txt</a>）。</li>
+  <li>选配置：改 <code>config.json</code> 或用 <code>--model_config</code> 指定；默认就是 50/545 序列上限、256 维嵌入、64 头、2 层。</li>
+  <li>训练：<code>python train_reg.py --model_config config.json --lr 0.001 --b 32 --epochs 100 --dataset raw_davis</code>。<code>--dataset</code> 支持 <code>benchmark_davis</code>、<code>benchmark_kiba</code>、<code>raw_davis</code>、<code>raw_kiba</code>。</li>
+  <li>看曲线：<code>tensorboard --logdir=./log</code>，再转发 6006 端口（<code>ssh -L 6006:localhost:6006 user@server_ip</code>）打开 <code>http://localhost:6006</code>。</li>
+  <li>评估或预测：用 <code>torch.load(..., weights_only=True)</code> 载入 <code>models/</code> 下的权重，按 checkpoint 形状重建解码器输入维度，再把 SMILES 与蛋白序列送进编码器。README 的推理片段就是这一步。</li>
+</ol>
+<p>端到端笔记本是 <a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/Example.ipynb">Example.ipynb</a>（中文）与 <a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/Example_en.ipynb">Example_en.ipynb</a>，从装环境、训练到预测都走一遍。</p>
+
+<h2>数据可用性</h2>
+<p>和多数 DTA 仓库不同，数据就在树里：<code>dataset/regression/DAVIS</code>、<code>dataset/regression/KIBA</code>，另有 <code>BindingDB</code>、<code>ChEMBL</code> 目录与 <code>dataset/regression/benchmark</code> 下的 benchmark 划分。四个预训练权重（各约 101 MB）也在 <code>models/</code>，可以先评估再决定要不要训练。词表在 <code>vocabulary/</code>，<code>preprocess.py</code> 的编码器依赖它，不确定要重训时不要重建词表。</p>
+
+<h2>TransGNN_DTA 与三种常见起点的对比</h2>
+<table>
+  <thead><tr><th>维度</th><th>TransGNN_DTA</th><th>照论文自己重写</th><th>在线 DTA 预测服务</th></tr></thead>
+  <tbody>
+    <tr><td>你拿到什么</td><td><b>模型代码、4 个权重、DAVIS/KIBA 数据、笔记本</b></td><td>一篇论文和你要自己写的代码</td><td>HTTP 接口返回的预测值，没有源码</td></tr>
+    <tr><td>可复现性</td><td><b>脚本与配置都在树里</b>，分数取决于你自己的运行</td><td>完全取决于你对论文的理解</td><td>不可复现，接口随时可能变</td></tr>
+    <tr><td>拿到第一个结果要多久</td><td>一次 32 GB 显卡上的 <code>train_reg.py</code> 运行</td><td>先花数周实现，才见到第一个数</td><td>按调用计费，还要考虑分子数据出境</td></tr>
+    <tr><td>不适合什么场景</td><td>需要持续维护的包、现成 CLI 或有 SLA 的服务；想在网页上引用现成分数的人</td><td>今天就想拿到可用 baseline 的人</td><td>分子与靶点数据必须留在内网的人</td></tr>
+  </tbody>
+</table>
+
+<h2>常见问题（FAQ）</h2>
+<h3>药物和靶点的结合亲和力怎么预测？</h3>
+<p>在这个仓库里的最短路径分三步：先训练、再载权重、最后推理。用 <code>train_reg.py</code> 在 DAVIS 或 KIBA 上训练，再从 <code>models/</code> 载入权重，把一条 SMILES 和一段蛋白序列送进 <code>preprocess.py</code> 的编码器。README 给了完整的推理片段，输出是四位小数的亲和力回归值，不是分类标签。</p>
+<h3>DAVIS 数据集上跑 DTA 模型，有没有现成代码？</h3>
+<p>有，就是这个仓库本身，数据已随仓库提供：<code>dataset/regression/DAVIS</code>，训练命令是 <code>python train_reg.py --model_config config.json --lr 0.001 --b 32 --epochs 100 --dataset raw_davis</code>。想做 benchmark 划分对比就换成 <code>--dataset benchmark_davis</code>，两者用的是同一套脚本。</p>
+<h3>transformer 加 GNN 做药物靶点回归怎么实现？</h3>
+<p>按这里的实现顺序是：增强嵌入层做词嵌入加位置嵌入，编码器堆叠注意力层抓序列上下文，GNN 层在分块表示之间做消息传递，解码器把特征回归成一维亲和力。配置里 2 层编码器、64 个注意力头、256 维嵌入，代码在 <code>double_towers.py</code>。</p>
+<h3>想复现药物靶点亲和力论文的实验，从哪一步开始？</h3>
+<p>从环境开始：Python 3.12 + PyTorch 2.3.0 + CUDA 12.4 与 README 一致，<code>pip install -r requirements.txt</code> 装锁定的依赖，然后按 <code>config.json</code> 的训练命令跑。本页不提供任何复现分数字，因为它不在仓库 README 里；你跑出来的数才是可引用的数。</p>
+<h3>训练这个模型需要多少显存？</h3>
+<p>README 记录的参考实验是单张 32 GB vGPU。训练循环已内置混合精度（<code>GradScaler</code> 与 <code>autocast</code>），小卡可以通过调小 <code>--b</code>（默认 32）来跑，代价是耗时变长；序列上限 50 与 545 也直接决定显存占用。</p>
+<h3>仓库里有没有现成的预训练权重？</h3>
+<p>有，一共 4 个，都放在仓库的 <code>models/</code> 目录：DAVIS 与 KIBA 各一份 best-CI 和 best-MSE，每个约 101 MB。载入时需要按 checkpoint 里的形状重建解码器输入维度（README 片段演示了这一步），因为解码器是在加载时重建的。</p>
+<h3>DAVIS 与 KIBA 的数据从哪来，仓库里带吗？</h3>
+<p>带，数据和代码在同一个仓库里。<code>dataset/regression</code> 下有 DAVIS、KIBA，以及 BindingDB、ChEMBL 目录和 benchmark 划分；代码按 README 给的路径取数：benchmark 集在 <code>dataset/regression/benchmark</code>，raw 集在 <code>dataset/regression</code>。</p>
+
+<h2>引用与许可</h2>
+<p>使用本代码请引用论文：<i>TransGNN-DTA: A Framework for Drug-Target Affinity Prediction Based on a Chunked Transformer-GNN</i>，DOI <a href="https://doi.org/10.5755/j01.itc.54.4.42186">10.5755/j01.itc.54.4.42186</a>（该 DOI 取自仓库 README，本页不添加其它标识符）。源代码采用 <b>Apache License 2.0</b>（<a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/LICENSE">LICENSE</a>），© Quietpeng。</p>
+
+<div class="note"><b>边界说明</b>：这是论文配套的科研代码，不是有支持承诺的产品。没有 release、没有 PyPI 包、没有托管服务，唯一支持的使用方式就是克隆仓库。需要 SLA、版本化 API 或持续维护的 CLI 的项目不适合用它。作者：Quietpeng，个人研究者，非公司或机构项目；代码按 Apache-2.0 授权。</div>
+
+</article>
+</main>
+
+<script>
+/* 语言自动切换：只在浏览器首选语言与当前页语言不一致时跳转。
+   护栏：① 尊重 ?lang= 显式覆盖；② 跳过爬虫 UA（避免被判 cloaking）；③ replace 不留历史栈。 */
+(function () {
+  try {
+    if (/[?&]lang=/.test(location.search)) return;
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|baiduspider/i.test(navigator.userAgent)) return;
+    var want = (navigator.languages && navigator.languages[0]) || navigator.language || "";
+    var cur = document.documentElement.lang || "";
+    if (/^zh/i.test(want) === /^zh/i.test(cur)) return;
+    var t = "../";
+    if (t && t !== location.pathname) location.replace(t + location.search + location.hash);
+  } catch (e) {}
+})();
+</script>
+</body>
+</html>

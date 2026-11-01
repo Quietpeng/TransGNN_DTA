@@ -1,0 +1,25 @@
+{
+  "url": "https://quietpeng.github.io/TransGNN_DTA/",
+  "viewport": "390x844",
+  "scale": 3,
+  "theme": "dark",
+  "lang": "en-US",
+  "images": [
+    {
+      "name": "home",
+      "src": "home.webp",
+      "width": 1440,
+      "height": 900,
+      "bytes": 60102,
+      "alt": "home 截图"
+    },
+    {
+      "name": "home-mobile",
+      "src": "home-mobile.webp",
+      "width": 390,
+      "height": 844,
+      "bytes": 41810,
+      "alt": "home-mobile 截图"
+    }
+  ]
+}

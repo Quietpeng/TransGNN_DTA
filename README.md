@@ -2,6 +2,8 @@
 # TransGNN_DTA Project Documentation  
 **English** ｜ [中文](README.zh.md)
 
+> Project page: <https://quietpeng.github.io/TransGNN_DTA/> · [中文页](https://quietpeng.github.io/TransGNN_DTA/zh/)
+
 
 ## Introduction  
 TransGNN_DTA is a project for drug-target affinity prediction, implementing the TransGNN model that combines Transformer and GNN technologies. The model aims to more accurately predict the binding affinity between drugs and targets, supports multiple benchmark datasets such as DAVIS and KIBA, and provides corresponding training and testing scripts. Meanwhile, the project includes functions like data preprocessing, model training, early stopping, and email notifications to facilitate users' experiments and result monitoring.  
@@ -182,3 +184,4 @@ The project supports email notifications for early stopping and training failure
 
 ## Acknowledgments  
 Thanks to all contributors to this project. Their efforts and contributions have made this project possible. We also thank the open-source community for providing various tools and libraries that facilitated the development and implementation of this project.
+

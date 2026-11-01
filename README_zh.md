@@ -1,1 +1,1 @@
-> 本文已合并到 [`README.md`](./README.md)，此路径仅作兼容。
+> 本文已迁移到 [`README.zh.md`](./README.zh.md)，此路径仅作兼容。

@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>TransGNN-DTA: Transformer + GNN drug-target affinity regression</title>
+<meta name="description" content="Apache-2.0 PyTorch implementation of TransGNN for drug-target affinity regression on DAVIS and KIBA: chunked Transformer encoder, GNN message passing, 4 checkpoints and training scripts.">
+<link rel="canonical" href="https://quietpeng.github.io/TransGNN_DTA/">
+<link rel="alternate" hreflang="en" href="https://quietpeng.github.io/TransGNN_DTA/">
+<link rel="alternate" hreflang="zh-CN" href="https://quietpeng.github.io/TransGNN_DTA/zh/">
+<link rel="alternate" hreflang="x-default" href="https://quietpeng.github.io/TransGNN_DTA/">
+<meta name="author" content="Quietpeng">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="TransGNN-DTA: Transformer + GNN drug-target affinity regression">
+<meta property="og:description" content="Apache-2.0 PyTorch implementation of TransGNN for drug-target affinity regression on DAVIS and KIBA: chunked Transformer encoder, GNN message passing, 4 checkpoints and training scripts.">
+<meta property="og:url" content="https://quietpeng.github.io/TransGNN_DTA/">
+<meta name="twitter:card" content="summary_large_image">
+
+<style>
+  :root { --bg:#fbfbfd; --fg:#17181c; --muted:#5b6070; --line:#e3e5ec; --accent:#1f3a93; --card:#fff; --warn:#8a5a00; --ok:#1a6b3c }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0e1015; --fg:#eceef4; --muted:#9aa1b2; --line:#252833; --accent:#8fb0ff; --card:#151821; --warn:#e0b25a; --ok:#7fd8a4 } }
+  * { box-sizing:border-box }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.7 -apple-system,"Segoe UI","Noto Sans SC",system-ui,sans-serif; }
+  main { max-width:880px; margin:0 auto; padding:56px 20px 96px; }
+  header { display:flex; gap:16px; align-items:baseline; flex-wrap:wrap; margin-bottom:8px }
+  h1 { font-size:clamp(23px,3.8vw,33px); line-height:1.3; margin:0; flex:1 1 320px }
+  .sub { color:var(--muted); margin:6px 0 26px; font-size:14.5px }
+  h2 { font-size:20px; margin:46px 0 12px; padding-bottom:8px; border-bottom:1px solid var(--line) }
+  h3 { font-size:16.5px; margin:22px 0 6px }
+  .lede { font-size:17px } .lede strong { color:var(--accent) }
+  blockquote { margin:16px 0; padding:6px 0 6px 16px; border-left:3px solid var(--line); color:var(--muted) }
+  blockquote b { color:var(--fg) }
+  table { width:100%; border-collapse:collapse; margin:14px 0; font-size:14.5px }
+  th, td { text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top }
+  th { color:var(--muted); font-weight:600 }
+  th[scope="row"] { color:var(--fg); font-weight:600; white-space:nowrap }
+  code, pre { background:rgba(127,127,127,.13); border-radius:6px; font-size:.92em }
+  code { padding:1px 5px } pre { padding:14px 16px; overflow:auto; line-height:1.55 }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(215px,1fr)); gap:14px; margin:18px 0 }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px }
+  .card b { display:block; font-size:21px } .card span { color:var(--muted); font-size:13.5px }
+  a { color:var(--accent) }
+  a:focus-visible, .cta:focus-visible, summary:focus-visible { outline:3px solid var(--accent); outline-offset:3px; border-radius:4px }
+  .cta { display:inline-block; margin:8px 10px 8px 0; padding:10px 18px; border-radius:999px; background:var(--accent); color:#fff; text-decoration:none; font-weight:600 }
+  .cta.ghost { background:transparent; color:var(--accent); border:1px solid var(--accent) }
+  .skip { position:absolute; left:-9999px; top:0; background:var(--card); padding:10px 14px; border:1px solid var(--line); border-radius:8px; z-index:9 }
+  .skip:focus { left:12px; top:12px }
+  .lang { font-size:14px; color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:999px; padding:4px 12px }
+  .note { border:1px solid var(--line); border-left:4px solid var(--warn); border-radius:8px; padding:12px 16px; background:var(--card); margin:16px 0 }
+  .note b { color:var(--warn) }
+  .ok { color:var(--ok) }
+  .gallery { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; margin:16px 0 }
+  .gallery figure { margin:0 }
+  .gallery img { width:100%; height:auto; border:1px solid var(--line); border-radius:10px }
+  .gallery figcaption { color:var(--muted); font-size:13.5px; margin-top:6px }
+  footer { margin-top:56px; color:var(--muted); font-size:13.5px; border-top:1px solid var(--line); padding-top:18px }
+  @media (prefers-reduced-motion: reduce) { * { animation:none !important; transition:none !important; scroll-behavior:auto !important } }
+  @media print { .skip, .cta, .lang { display:none } body { background:#fff; color:#000 } a[href^="http"]::after { content:" (" attr(href) ")"; font-size:11px } }
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareSourceCode",
+  "name": "TransGNN_DTA",
+  "alternateName": [
+    "TransGNN-DTA",
+    "transgnn_dta"
+  ],
+  "description": "Apache-2.0 PyTorch implementation of TransGNN for drug-target affinity regression on DAVIS and KIBA: chunked Transformer encoder, GNN message passing and a regression decoder, with preprocessing and training scripts.",
+  "url": "https://quietpeng.github.io/TransGNN_DTA/",
+  "codeRepository": "https://github.com/Quietpeng/TransGNN_DTA",
+  "programmingLanguage": "Python",
+  "runtimePlatform": "PyTorch 2.3.0 / CUDA 12.4",
+  "author": {
+    "@type": "Person",
+    "name": "Quietpeng"
+  },
+  "dateModified": "2026-11-01",
+  "inLanguage": "en",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "citation": "https://doi.org/10.5755/j01.itc.54.4.42186",
+  "sameAs": [
+    "https://doi.org/10.5755/j01.itc.54.4.42186",
+    "https://github.com/Quietpeng/TransGNN_DTA"
+  ],
+  "keywords": "drug-target affinity, graph neural network, transformer, DAVIS, KIBA, PyTorch, drug discovery"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "TransGNN_DTA",
+  "url": "https://quietpeng.github.io/TransGNN_DTA/",
+  "inLanguage": "en",
+  "publisher": {
+    "@type": "Person",
+    "name": "Quietpeng"
+  }
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">跳到正文</a>
+<main id="main">
+<article>
+
+<header>
+  <h1>TransGNN_DTA: a Transformer + GNN pipeline for drug-target affinity regression</h1>
+  <a class="lang" href="./zh/" hreflang="zh-CN" lang="zh-CN">中文</a>
+</header>
+<p class="sub">Last updated 2026-11-01 · Apache-2.0 · Python 3.12 / PyTorch 2.3.0 / CUDA 12.4</p>
+
+<p class="lede"><strong>In short</strong>: TransGNN_DTA is a research-code repository that implements TransGNN for drug-target affinity (DTA) regression — a chunked Transformer encoder for drug SMILES and protein sequences, GNN message passing over the encoded sequences, and a regression decoder — with the preprocessing, training and checkpoint-loading scripts needed to run DAVIS and KIBA experiments on your own GPU.</p>
+
+<blockquote>
+<p><b>Paper:</b> <a href="https://doi.org/10.5755/j01.itc.54.4.42186">TransGNN-DTA: A Framework for Drug-Target Affinity Prediction Based on a Chunked Transformer-GNN</a> · <b>Code:</b> <a href="https://github.com/Quietpeng/TransGNN_DTA">Quietpeng/TransGNN_DTA</a></p>
+</blockquote>
+
+<p>
+  <a class="cta" href="https://github.com/Quietpeng/TransGNN_DTA">Code repository</a>
+  <a class="cta ghost" href="https://doi.org/10.5755/j01.itc.54.4.42186">Paper (DOI)</a>
+</p>
+
+<div class="grid">
+  <div class="card"><b>15%</b><span>dropout on all three dropout slots in <code>config.json</code> · <a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/config.json">config</a></span></div>
+  <div class="card"><b>32 GB</b><span>the GPU the README's reference run used · <a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/README.md">README</a></span></div>
+  <div class="card"><b>101 MB</b><span>size of each of the four shipped <code>.pth</code> checkpoints · <a href="https://github.com/Quietpeng/TransGNN_DTA/tree/main/models">models/</a></span></div>
+  <div class="card"><b>2 datasets</b><span>DAVIS and KIBA ship in <code>dataset/regression</code> · <a href="https://github.com/Quietpeng/TransGNN_DTA/tree/main/dataset/regression">dataset</a></span></div>
+</div>
+
+<h2>Repository facts before you run anything</h2>
+<table>
+  <tbody>
+    <tr><th scope="row">Paper</th><td><a href="https://doi.org/10.5755/j01.itc.54.4.42186">doi:10.5755/j01.itc.54.4.42186</a>, linked from <a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/README.md">README</a></td></tr>
+    <tr><th scope="row">Licence</th><td>Apache License 2.0, code only, see <a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/LICENSE">LICENSE</a></td></tr>
+    <tr><th scope="row">Reference stack</th><td>Python 3.12 (Ubuntu 22.04), PyTorch 2.3.0, CUDA 12.4, one 32 GB vGPU, see <a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/README.md">README</a></td></tr>
+    <tr><th scope="row">Datasets in tree</th><td>DAVIS, KIBA, BindingDB and ChEMBL under <a href="https://github.com/Quietpeng/TransGNN_DTA/tree/main/dataset/regression">dataset/regression</a>; benchmark splits under <code>benchmark/</code></td></tr>
+    <tr><th scope="row">Shipped checkpoints</th><td>4 <code>.pth</code> files (DAVIS/KIBA × best-CI/best-MSE) at ~101 MB each in <a href="https://github.com/Quietpeng/TransGNN_DTA/tree/main/models">models/</a></td></tr>
+    <tr><th scope="row">Entry points</th><td><a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/train_reg.py">train_reg.py</a> (training), <a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/preprocess.py">preprocess.py</a> (encoders), <a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/double_towers.py">double_towers.py</a> (model), <a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/util_function.py">util_function.py</a> (metrics, early stopping)</td></tr>
+    <tr><th scope="row">Config knobs</th><td>drug_max_seq 50, target_max_seq 545, emb_size 256, 64 attention heads, 2 layers, dropout 0.15 — all in <a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/config.json">config.json</a></td></tr>
+  </tbody>
+</table>
+
+<div class="note"><b>No benchmark numbers on this page.</b> The repository's README ships no MSE, CI or Pearson table, so this page states none. Any DAVIS/KIBA score you need should come from your own run of the shipped scripts, not from a landing page. The paper is the place to check the authors' reported results.</div>
+
+<h2>Method: what the four stages actually do</h2>
+<p>The model is built as four stages. An <b>enhanced embedding layer</b> turns drug SMILES and protein sequences into word embeddings plus position embeddings, followed by normalization and dropout. An <b>encoder module</b> stacks attention layers with a feed-forward block to capture context along the sequence. A <b>GNN layer</b> then does message passing so that structural information in the chunked representations propagates between positions. A <b>decoder module</b> maps the processed features to a single real value — the predicted binding affinity.</p>
+<p>Training uses mean squared error for the regression objective, AdamW for updates and a <code>ReduceLROnPlateau</code> scheduler driven by validation loss, with mixed precision through <code>GradScaler</code> and <code>autocast</code> to cut memory and speed up steps. Early stopping watches validation loss with a configurable <code>patience</code> (the README example uses <code>EarlyStopping(patience=20)</code>), and can send an e-mail when it fires. Metrics returned by the test path are <code>mse</code>, <code>r2</code>, <code>CI</code> and the regression loss, computed in <code>util_function.py</code>.</p>
+<p>Sequence handling is chunked rather than truncated: <code>drug_max_seq</code> is 50 and <code>target_max_seq</code> is 545 in the shipped config, so long proteins are cut into windows instead of being thrown away — this is the "chunked" part of the paper title and the reason the encoder can be applied to proteins far longer than a drug molecule.</p>
+
+<h2>Reproducing a run: the exact sequence</h2>
+<ol>
+  <li>Create the environment: <code>python -m venv transgnn_env &amp;&amp; source transgnn_env/bin/activate</code>.</li>
+  <li>Clone and install: <code>git clone https://github.com/Quietpeng/TransGNN_DTA.git &amp;&amp; cd TransGNN_DTA &amp;&amp; pip install -r requirements.txt</code>. Pins are scikit-learn 1.5.2, scipy 1.14.1, subword-nmt 0.3.8, PyYAML 6.0.1, numpy 2.1.3, pandas 2.2.3, tensorboard 2.18.0 (<a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/requirements.txt">requirements.txt</a>).</li>
+  <li>Pick a config: edit <code>config.json</code>, or pass <code>--model_config</code>; the shipped values are 50/545 sequence limits, 256-dim embeddings, 64 heads, 2 layers.</li>
+  <li>Train: <code>python train_reg.py --model_config config.json --lr 0.001 --b 32 --epochs 100 --dataset raw_davis</code>. <code>--dataset</code> accepts <code>benchmark_davis</code>, <code>benchmark_kiba</code>, <code>raw_davis</code>, <code>raw_kiba</code>.</li>
+  <li>Watch it: <code>tensorboard --logdir=./log</code>, then forward port 6006 (<code>ssh -L 6006:localhost:6006 user@server_ip</code>) and open <code>http://localhost:6006</code>.</li>
+  <li>Score or predict: load a checkpoint from <code>models/</code> with <code>torch.load(..., weights_only=True)</code>, re-point the decoder's input dimension from the checkpoint, then run the encoders on a SMILES string and a protein sequence. The README's inference snippet does exactly this.</li>
+</ol>
+<p>The end-to-end notebook is <a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/Example_en.ipynb">Example_en.ipynb</a> (English) and <a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/Example.ipynb">Example.ipynb</a>; both walk through setup, training, and prediction with the shipped data.</p>
+
+<h2>Data availability</h2>
+<p>Unlike many DTA repositories, the datasets are in the tree: <code>dataset/regression/DAVIS</code>, <code>dataset/regression/KIBA</code>, plus <code>BindingDB</code> and <code>ChEMBL</code> folders and benchmark splits under <code>dataset/regression/benchmark</code>. Four pretrained checkpoints (~101 MB each) also ship in <code>models/</code>, so you can evaluate without training first. Vocabulary files are under <code>vocabulary/</code>; the encoders in <code>preprocess.py</code> depend on them, so do not rebuild the vocabulary unless you intend to retrain from scratch.</p>
+
+<h2>TransGNN_DTA vs the three usual starting points</h2>
+<table>
+  <thead><tr><th>Dimension</th><th>TransGNN_DTA</th><th>Re-implementing the paper</th><th>Hosted DTA prediction API</th></tr></thead>
+  <tbody>
+    <tr><td>What you get</td><td><b>Model code, 4 checkpoints, DAVIS/KIBA data, notebooks</b></td><td>A paper and your own code</td><td>Predictions over HTTP, no source</td></tr>
+    <tr><td>Reproducibility</td><td><b>Scripts and config are in the tree</b>; scores depend on your run</td><td>Depends entirely on your reading of the paper</td><td>Not reproducible; endpoints can change</td></tr>
+    <tr><td>Cost of a first result</td><td>One 32 GB GPU run of <code>train_reg.py</code></td><td>Weeks of implementation before the first number</td><td>Per-call pricing and data-egress questions</td></tr>
+    <tr><td>Not a good fit for</td><td>Teams that need a maintained package, a CLI, or a service with an SLA; anyone who needs scores quoted on a web page</td><td>Anyone who just wants a working baseline today</td><td>Anyone who must keep molecule and target data on-premises</td></tr>
+  </tbody>
+</table>
+
+<h2>FAQ</h2>
+<h3>How do I predict drug-target binding affinity with deep learning using this repo?</h3>
+<p>Run <code>train_reg.py</code> on DAVIS or KIBA, then load a checkpoint from <code>models/</code> and feed a SMILES string plus a protein sequence through the encoders in <code>preprocess.py</code>. The README ships a complete inference snippet that prints the predicted affinity to four decimal places; the model output is a single regression value, not a class label.</p>
+<h3>Is there a Transformer plus GNN model for DTA prediction I can actually run?</h3>
+<p>Yes — this repository is that combination: a chunked Transformer encoder for sequences, a GNN layer for message passing, and a regression decoder. The entry points are <code>train_reg.py</code> and <code>double_towers.py</code>, and the config in <code>config.json</code> already sets 2 encoder layers, 64 attention heads and 256-dim embeddings.</p>
+<h3>Can I reproduce the DAVIS and KIBA benchmark results with this code?</h3>
+<p>You can run the same pipeline on the same splits: benchmark splits live under <code>dataset/regression/benchmark</code> and the loader accepts <code>benchmark_davis</code> and <code>benchmark_kiba</code>. This page does not quote scores because the repository README contains no metric table; treat any number as something you must produce yourself and compare against the paper, which reports the authors' own runs.</p>
+<h3>How do I do protein-ligand affinity regression in PyTorch without truncating long proteins?</h3>
+<p>The repository chunks sequences instead of truncating them: <code>target_max_seq</code> is 545 and <code>drug_max_seq</code> is 50, and the encoder is applied per chunk before the GNN aggregates across positions. That is why the paper calls the design "chunked" — long proteins keep their tail information instead of being cut at a fixed window.</p>
+<h3>What hardware do I need to train this model?</h3>
+<p>The README documents one 32 GB vGPU for the reference run, with PyTorch 2.3.0, CUDA 12.4 and Python 3.12 on Ubuntu 22.04. Mixed precision (<code>GradScaler</code> + <code>autocast</code>) is already wired into the training loop, so smaller cards can work with a reduced batch size (<code>--b</code> defaults to 32) at the cost of longer wall-clock time.</p>
+<h3>Are pretrained weights included, or do I have to train from scratch?</h3>
+<p>Four checkpoints ship in <code>models/</code>: DAVIS and KIBA, each with a best-CI and a best-MSE variant, about 101 MB per file. Loading one still requires re-pointing the decoder input dimension from the checkpoint shape, as the README snippet does, because the decoder is rebuilt at load time.</p>
+<h3>Where do the DAVIS and KIBA datasets come from, and are they in the repository?</h3>
+<p>They are in the repository under <code>dataset/regression</code>, alongside BindingDB and ChEMBL folders and benchmark splits. The code expects the paths used in the README: <code>dataset/regression/benchmark</code> for benchmark sets and <code>dataset/regression</code> for raw sets.</p>
+
+<h2>Citation and licence</h2>
+<p>If you use this code, cite the paper: <i>TransGNN-DTA: A Framework for Drug-Target Affinity Prediction Based on a Chunked Transformer-GNN</i>, DOI <a href="https://doi.org/10.5755/j01.itc.54.4.42186">10.5755/j01.itc.54.4.42186</a>. The DOI above is the one linked from the repository README; this page adds no other identifier. Source code is licensed <b>Apache License 2.0</b> (<a href="https://github.com/Quietpeng/TransGNN_DTA/blob/main/LICENSE">LICENSE</a>), © Quietpeng.</p>
+
+<div class="note"><b>Scope note</b>: this is research code accompanying a paper, not a supported product. There is no release, no package on PyPI, and no hosted service; the only supported way to use it is cloning the repository. Not a good fit if you need an SLA, a versioned API, or a maintained CLI.</div>
+
+</article>
+</main>
+
+<script>
+/* 语言自动切换：只在浏览器首选语言与当前页语言不一致时跳转。
+   护栏：① 尊重 ?lang= 显式覆盖；② 跳过爬虫 UA（避免被判 cloaking）；③ replace 不留历史栈。 */
+(function () {
+  try {
+    if (/[?&]lang=/.test(location.search)) return;
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|baiduspider/i.test(navigator.userAgent)) return;
+    var want = (navigator.languages && navigator.languages[0]) || navigator.language || "";
+    var cur = document.documentElement.lang || "";
+    if (/^zh/i.test(want) === /^zh/i.test(cur)) return;
+    var t = "zh/";
+    if (t && t !== location.pathname) location.replace(t + location.search + location.hash);
+  } catch (e) {}
+})();
+</script>
+</body>
+</html>
